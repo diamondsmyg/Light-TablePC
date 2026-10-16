@@ -1,0 +1,336 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Light Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a backlit light table. Left: the brief you write. Right: a contact sheet of developed frames. */
+:root {
+  --table: #eef1f3;
+  --sheet: #fbfcfc;
+  --ink: #1b2126;
+  --ink-soft: #56616b;
+  --line: #d3d9de;
+  --film: #22272b;
+  --film-edge: #3a4248;
+  --pencil: #f2c230;
+  --pencil-ink: #4a3a00;
+  --danger: #b4332b;
+  --danger-bg: #fbe9e7;
+  --focus: #2f6fd6;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --table: #141819; --sheet: #1c2124; --ink: #e8ecee; --ink-soft: #9aa6ae; --line: #303a40;
+    --film: #0b0d0e; --film-edge: #2a3135; --pencil: #f2c230; --pencil-ink: #2b2100;
+    --danger: #ff8a7f; --danger-bg: #3a1b18; --focus: #7aa8ff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --table: #141819; --sheet: #1c2124; --ink: #e8ecee; --ink-soft: #9aa6ae; --line: #303a40;
+  --film: #0b0d0e; --film-edge: #2a3135; --pencil: #f2c230; --pencil-ink: #2b2100;
+  --danger: #ff8a7f; --danger-bg: #3a1b18; --focus: #7aa8ff; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--table); color: var(--ink);
+  font: 400 15px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); align-items: start; }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); } }
+
+header.mast { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mast h1 { font: 700 clamp(30px, 5vw, 44px)/1 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+.mast h1 span { background: var(--pencil); color: var(--pencil-ink); padding: 0 .18em; border-radius: 3px; }
+.mast p { margin: 0; color: var(--ink-soft); max-width: 46ch; }
+
+.brief { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+@media (max-width: 860px) { .brief { position: static; } }
+.label { font: 500 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); display: block; margin-bottom: 8px; }
+textarea, input[type=text], input[type=password], input[type=number], select {
+  width: 100%; font: inherit; color: var(--ink); background: var(--table);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+}
+textarea { min-height: 120px; resize: vertical; }
+textarea:focus, input:focus, select:focus, button:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 13px/1 var(--font-body); padding: 8px 11px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.aspect { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.aspect button { display: grid; justify-items: center; gap: 6px; padding: 10px 4px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink); cursor: pointer; font: 500 12px/1.2 var(--font-body); }
+.aspect button i { display: block; border: 1.5px solid currentColor; border-radius: 2px; }
+.aspect button[aria-pressed="true"] { border-color: var(--ink); background: var(--table); box-shadow: inset 0 0 0 1px var(--ink); }
+.aspect small { font-family: var(--font-mono); color: var(--ink-soft); font-size: 11px; }
+.seedrow { display: flex; gap: 8px; align-items: center; }
+.seedrow input { flex: 1; min-width: 0; font-family: var(--font-mono); }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+.ghost { font: 500 13px/1 var(--font-body); padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.develop { font: 700 17px/1 var(--font-display); letter-spacing: .01em; padding: 15px; border: 0; border-radius: 8px; background: var(--pencil); color: var(--pencil-ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.develop kbd { font: 500 11px/1 var(--font-mono); opacity: .7; }
+.develop:disabled { opacity: .6; cursor: progress; }
+details.key { border-top: 1px dashed var(--line); padding-top: 14px; }
+details.key summary { cursor: pointer; font-size: 14px; font-weight: 500; }
+details.key p { margin: 8px 0; color: var(--ink-soft); font-size: 13px; }
+details.key a { color: var(--focus); }
+.err { background: var(--danger-bg); color: var(--danger); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+
+.sheet { background: var(--film); border-radius: 10px; padding: 18px 14px; min-height: 420px; }
+.sheet-head { display: flex; justify-content: space-between; color: #c9d1d6; font: 500 11px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; padding: 0 4px 14px; border-bottom: 1px dashed var(--film-edge); margin-bottom: 16px; }
+.frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.frame { background: #000; border: 1px solid var(--film-edge); border-radius: 4px; padding: 8px; display: grid; gap: 8px; min-width: 0; }
+.frame .shot { background: #15191b; border-radius: 2px; overflow: hidden; display: grid; place-items: center; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame .meta { display: flex; justify-content: space-between; gap: 8px; font: 400 11px/1.3 var(--font-mono); color: #f2c230; }
+.frame .cap { color: #c9d1d6; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.frame .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.frame .acts a, .frame .acts button { font: 500 12px/1 var(--font-body); padding: 7px 9px; border-radius: 4px; border: 1px solid #3a4248; background: transparent; color: #e8ecee; cursor: pointer; text-decoration: none; }
+.frame .acts a:hover, .frame .acts button:hover { border-color: #f2c230; }
+.developing { color: #9aa6ae; font: 400 12px/1.4 var(--font-mono); text-align: center; padding: 12px; }
+.developing b { display: block; width: 34px; height: 34px; margin: 0 auto 10px; border-radius: 50%; border: 2px solid #3a4248; border-top-color: #f2c230; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .developing b { animation: none; } }
+.empty { color: #c9d1d6; display: grid; gap: 14px; padding: 30px 8px; max-width: 520px; }
+.empty h2 { font: 700 22px/1.2 var(--font-display); margin: 0; color: #fff; text-wrap: balance; }
+.empty p { margin: 0; color: #9aa6ae; }
+.empty .chips .chip { color: #e8ecee; border-color: #3a4248; text-align: left; line-height: 1.3; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <h1>Light <span>Table</span></h1>
+    <p>Describe a picture, pick a frame, and develop it with an AI image model. Every result lands on the contact sheet.</p>
+  </header>
+
+  <form class="brief" id="brief" novalidate>
+    <div>
+      <label class="label" for="prompt">Prompt</label>
+      <textarea id="prompt" placeholder="A rainy Toronto streetcar at night, neon reflections on wet pavement"></textarea>
+    </div>
+
+    <div>
+      <span class="label" id="style-l">Style</span>
+      <div class="chips" id="styles" role="group" aria-labelledby="style-l"></div>
+    </div>
+
+    <div>
+      <span class="label" id="aspect-l">Frame</span>
+      <div class="aspect" id="aspects" role="group" aria-labelledby="aspect-l"></div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label class="label" for="model">Model</label>
+        <select id="model">
+          <option value="flux">Flux (balanced)</option>
+          <option value="turbo">Turbo (fast)</option>
+          <option value="zimage">Z-Image</option>
+          <option value="gptimage">GPT Image</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="seed">Seed</label>
+        <div class="seedrow">
+          <input id="seed" type="number" inputmode="numeric" placeholder="Random">
+          <button type="button" class="ghost" id="dice" aria-label="Pick a random seed">Roll</button>
+        </div>
+      </div>
+    </div>
+
+    <label class="check"><input type="checkbox" id="enhance" checked> Let the model expand my prompt</label>
+
+    <div id="error" class="err" role="alert" hidden></div>
+
+    <button class="develop" id="go" type="submit">Develop <kbd>Ctrl + Enter</kbd></button>
+
+    <details class="key" id="keybox">
+      <summary>API key</summary>
+      <p>Pollinations needs a free key. Sign in at <a href="https://enter.pollinations.ai" target="_blank" rel="noopener">enter.pollinations.ai</a>, copy your key, and paste it here. It stays in this browser only.</p>
+      <input id="apikey" type="password" autocomplete="off" placeholder="Paste key">
+    </details>
+  </form>
+
+  <section class="sheet" aria-label="Contact sheet">
+    <div class="sheet-head"><span>Contact sheet</span><span id="count">0 frames</span></div>
+    <div class="frames" id="frames"></div>
+    <div class="empty" id="empty">
+      <h2>Nothing developed yet</h2>
+      <p>Write a prompt on the left, or start from one of these.</p>
+      <div class="chips" id="ideas"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const STYLES = [
+  ["None", ""],
+  ["Photo", "photorealistic, 35mm film photograph, natural light"],
+  ["Watercolour", "loose watercolour painting on textured paper"],
+  ["Ink sketch", "black ink pen sketch, cross-hatching"],
+  ["3D render", "soft 3D render, clay materials, studio lighting"],
+  ["Pixel art", "16-bit pixel art, limited palette"],
+  ["Blueprint", "technical blueprint drawing, white lines on blue"]
+];
+const ASPECTS = [
+  ["Square", 1024, 1024],
+  ["Portrait", 832, 1216],
+  ["Landscape", 1216, 832]
+];
+const IDEAS = [
+  "A cozy workbench with an oscilloscope, soldering iron and glowing circuit boards",
+  "A lighthouse on a rocky Lake Superior shore during a thunderstorm",
+  "A tiny robot tending a rooftop vegetable garden at sunrise"
+];
+
+const $ = id => document.getElementById(id);
+let style = "", aspect = ASPECTS[0], frameNo = 0;
+
+function store(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+STYLES.forEach(([name, val], i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = name;
+  b.setAttribute("aria-pressed", i === 0);
+  b.onclick = () => { style = val; [...$("styles").children].forEach(c => c.setAttribute("aria-pressed", c === b)); };
+  $("styles").append(b);
+});
+ASPECTS.forEach((a, i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.setAttribute("aria-pressed", i === 0);
+  const s = 26 / Math.max(a[1], a[2]);
+  b.innerHTML = `<i style="width:${Math.round(a[1]*s)}px;height:${Math.round(a[2]*s)}px"></i>${a[0]}<small>${a[1]}×${a[2]}</small>`;
+  b.onclick = () => { aspect = a; [...$("aspects").children].forEach(c => c.setAttribute("aria-pressed", c === b)); };
+  $("aspects").append(b);
+});
+IDEAS.forEach(t => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = t;
+  b.onclick = () => { $("prompt").value = t; $("prompt").focus(); };
+  $("ideas").append(b);
+});
+
+$("apikey").value = load("lt-key") || "";
+if (!$("apikey").value) $("keybox").open = true;
+$("apikey").addEventListener("input", e => store("lt-key", e.target.value.trim() || null));
+$("dice").onclick = () => { $("seed").value = Math.floor(Math.random() * 1e9); };
+$("prompt").addEventListener("input", () => showError(""));
+$("prompt").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("brief").requestSubmit(); } });
+
+function showError(msg) { $("error").textContent = msg; $("error").hidden = !msg; }
+function updateCount() {
+  const n = $("frames").children.length;
+  $("count").textContent = n + (n === 1 ? " frame" : " frames");
+  $("empty").hidden = n > 0;
+}
+
+async function request(url, key, signal) {
+  const res = await fetch(url, { headers: key ? { Authorization: "Bearer " + key } : {}, signal });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.text()).slice(0, 160); } catch (e) {}
+    const err = new Error(detail); err.status = res.status; throw err;
+  }
+  const blob = await res.blob();
+  if (!blob.type.startsWith("image/")) { const err = new Error("The service sent back something that isn't an image."); err.status = 0; throw err; }
+  return blob;
+}
+
+async function generate(job) {
+  const q = new URLSearchParams({ model: job.model, width: job.w, height: job.h, seed: job.seed, nologo: "true", enhance: String(job.enhance) });
+  const p = encodeURIComponent(job.fullPrompt);
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 150000);
+  try {
+    try {
+      return await request(`https://gen.pollinations.ai/image/${p}?${q}`, job.key, ctrl.signal);
+    } catch (e) {
+      if (!job.key && (e.status === 401 || e.status === 403)) {
+        return await request(`https://image.pollinations.ai/prompt/${p}?${q}`, "", ctrl.signal);
+      }
+      throw e;
+    }
+  } finally { clearTimeout(timer); }
+}
+
+function explain(e, hadKey) {
+  if (e.name === "AbortError") return "That took too long. Try the Turbo model or a smaller frame.";
+  if (e.status === 401 || e.status === 403) return hadKey ? "The service rejected your API key. Check that you copied the whole key." : "The service needs a free API key. Open the API key section below and paste yours.";
+  if (e.status === 402) return "Your Pollinations balance has run out. Top it up at enter.pollinations.ai or try the Flux model, which costs less.";
+  if (e.status === 429) return "Too many requests at once. Wait a few seconds and develop again.";
+  if (e.status === 400) return "The service didn't accept those settings. Try another model. " + (e.message || "");
+  if (e.status) return `The image service returned an error (${e.status}). ${e.message || ""}`;
+  if (e instanceof TypeError) return "Couldn't reach the image service. Check your connection, and open this page from your computer's browser rather than a preview window.";
+  return e.message || "Something went wrong. Try again.";
+}
+
+function makeFrame(job) {
+  frameNo++;
+  const f = document.createElement("article");
+  f.className = "frame";
+  f.innerHTML = `<div class="shot" style="aspect-ratio:${job.w}/${job.h}"><div class="developing"><b></b>Developing frame ${frameNo}…</div></div>
+    <div class="meta"><span>#${String(frameNo).padStart(2, "0")} · ${job.model}</span><span>${job.w}×${job.h}</span></div>
+    <div class="cap"></div><div class="acts"></div>`;
+  f.querySelector(".cap").textContent = job.prompt;
+  $("frames").prepend(f);
+  updateCount();
+  return f;
+}
+
+$("brief").addEventListener("submit", async e => {
+  e.preventDefault();
+  const prompt = $("prompt").value.trim();
+  if (!prompt) { showError("Write a prompt first, or tap one of the ideas on the contact sheet."); $("prompt").focus(); return; }
+  showError("");
+  const job = {
+    prompt, model: $("model").value, w: aspect[1], h: aspect[2],
+    seed: $("seed").value ? Number($("seed").value) : Math.floor(Math.random() * 1e9),
+    enhance: $("enhance").checked, key: $("apikey").value.trim(), style
+  };
+  job.fullPrompt = style ? `${prompt}, ${style}` : prompt;
+  const frame = makeFrame(job);
+  $("go").disabled = true;
+  try {
+    const blob = await generate(job);
+    const url = URL.createObjectURL(blob);
+    const ext = (blob.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const shot = frame.querySelector(".shot");
+    shot.innerHTML = "";
+    const img = new Image(); img.src = url; img.alt = job.prompt; shot.append(img);
+    const acts = frame.querySelector(".acts");
+    const dl = document.createElement("a");
+    dl.href = url; dl.download = `light-table-${job.seed}.${ext}`; dl.textContent = "Download";
+    const reuse = document.createElement("button");
+    reuse.type = "button"; reuse.textContent = "Reuse settings";
+    reuse.onclick = () => { $("prompt").value = job.prompt; $("seed").value = job.seed; $("model").value = job.model; window.scrollTo({ top: 0, behavior: "smooth" }); };
+    const del = document.createElement("button");
+    del.type = "button"; del.textContent = "Remove";
+    del.onclick = () => { URL.revokeObjectURL(url); frame.remove(); updateCount(); };
+    acts.append(dl, reuse, del);
+    frame.querySelector(".meta span").textContent += ` · seed ${job.seed}`;
+  } catch (err) {
+    frame.remove(); updateCount();
+    showError(explain(err, !!job.key));
+    if (err.status === 401 || err.status === 403) $("keybox").open = true;
+  } finally { $("go").disabled = false; }
+});
+updateCount();
+</script>
+</body>
+</html>
+
+</body></html>
